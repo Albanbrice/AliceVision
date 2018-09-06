@@ -45,7 +45,6 @@ SemiGlobalMatchingRcTc::~SemiGlobalMatchingRcTc()
 void SemiGlobalMatchingRcTc::computeDepthSimMapVolume(
         std::vector<StaticVector<unsigned char> >& volume,
         std::vector<CudaDeviceMemoryPitched<float, 3>*>& volume_tmp_on_gpu,
-        // float& volumeMBinGPUMem,
         int wsh,
         float gammaC,
         float gammaP)
@@ -76,14 +75,6 @@ void SemiGlobalMatchingRcTc::computeDepthSimMapVolume(
         volume_buf_pinned = false;
     }
 
-    std::map<int,float*> volume_tmp;
-
-    int ct = 0;
-    for( auto j : _index_set )
-    {
-        volume_tmp.emplace( j, &volume_buf[ct * volDimX * volDimY * maxDimZ] );
-        ct++;
-    }
 
     const int volume_offset = volDimX * volDimY * maxDimZ;
     // volumeMBinGPUMem =
@@ -105,15 +96,17 @@ void SemiGlobalMatchingRcTc::computeDepthSimMapVolume(
      *       about 1/3 of the actual computation. Work to avoid it.
      */
     nvtxPushA( "host-copy of volume", __FILE__, __LINE__ );
+    int ct = 0;
     for( auto j : _index_set )
     {
         const int volDimZ = rcTcDepths[j].size();
 
         for( int i=0; i<volDimX * volDimY * volDimZ; i++ )
         {
-            float* ptr = volume_tmp[j];
+            float* ptr = &volume_buf[ct * volDimX * volDimY * maxDimZ];
             volume[j][i] = (unsigned char)( 255.0f * std::max(std::min(ptr[i],1.0f),0.0f) );
         }
+        ct++;
     }
 
     if( volume_buf_pinned )

@@ -627,10 +627,10 @@ bool SemiGlobalMatchingRc::sgmrc(bool checkIfExists)
                                              zDimsAtATime, devid );
     std::vector<CudaDeviceMemoryPitched<float, 3>*> volume_tmp_on_gpu;
     sp->cps.allocTempVolume( volume_tmp_on_gpu,
-                              tcams.size(),
-                              volDimX,
-                              volDimY,
-                              zDimsAtATime );
+                             tcams.size(),
+                             volDimX,
+                             volDimY,
+                             zDimsAtATime );
 
     std::vector<int> index_set( tcams.size() );
     for(int c = 0; c < tcams.size(); c++)
